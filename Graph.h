@@ -2,7 +2,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "Spath.h"
 
 using namespace std;
 
@@ -75,7 +74,6 @@ class Graph{
             //     }   
             // }
             graph[getVertexPos(source)][getVertexPos(target)]++;
-            adj[source] += target;
             // graph[getVertexPos(target)][getVertexPos(source)]++;
         }
         int getVertexPos(T vertex){
@@ -92,39 +90,94 @@ class Graph{
 
 
         vector<T> getPath(T source, T target){
-            // vector<T> answer;
-            // T curr = source;
-            // bool visited[size];
-
-            // while (curr != target){
-            //     answer.push_back(curr);
-            //     visited[getVertexPos(curr)] = true;
-            //     for (int i = 0; i < size; i++){
-            //         if(graph[getVertexPos(curr)][i] == 1 && !visited[i]){
-            //             curr = dictionary[i];
-            //             break;
-            //         }
-            //     }
-            // }
+            vector<T> answer;
+            T curr = source;
+            vector<T> open;
+            vector<T> closed;
+            int parents[size];
+            for (int i = 0; i < size; i++){
+                parents[i] = -1;
+            }
             
-            // answer.push_back(target);
-            // return answer;
+            open.push_back(source);
+            while (!open.empty()){ //while open has items
+                curr = open.front(); // curr = open.front()
+                open.erase(open.begin()); //open.pop()
+                closed.push_back(curr); //mark curr as visited
+                for (int i = 0; i < size; i++){ //for all children of curr
+                    if (graph[getVertexPos(curr)][i] == 1){ // children
+                        if (!inVector(closed, dictionary[i])){
+                            if (open.front() != dictionary[i]){
+                                open.push_back(dictionary[i]);
+                            }
+                            if (parents[i] == -1){
+                                parents[i] = getVertexPos(curr);
+                            }
+                        }
+                        // for (int j = 0; j < closed.size(); j++){
+                        //     if (closed[j] == dictionary[i]){
+                        //         break;
+                        //     } else {
+                        //         if (open.front() != dictionary[i]){
+                        //             open.push_back(dictionary[i]);
+                        //         }
+                        //         if (parents[i] == -1){
+                        //             parents[i] = getVertexPos(curr);
+                        //             break;
+                        // }
+                        //     }
+                        // }
+                    }
+                }
+                if (parents[getVertexPos(target)] != -1){
+                    break;
+                }
+                // for (int i = 0; i < open.size(); i++){
+                //     for (int j = 0; j < closed.size(); j++){
+                //         if (open[i] == closed[j]){
+                //             open.erase(open.begin() + i - 1);
+                //         }    
+                //     }
+                // }
+                
+            }
 
+            curr = target;
 
+            while (curr != source){
+                answer.push_back(curr);
+                curr = dictionary[parents[getVertexPos(curr)]];
+            }
+            vector<T> solution;
+            solution.push_back(source);
+            for (int i = answer.size() - 1; i >= 0; i--){
+                solution.push_back(answer[i]);
+            }
             
-            Spath<T> ans;
-            return ans.printShortestDistance(adj, source, target, siz());
-        };
+            return solution;
+        }
+        bool inVector(vector<T> vec, T t){
+            for (int i = 0; i < vec.size(); i++){
+                if (vec[i] == t){
+                    return true;
+                }
+            }
+            return false;
+        }
         friend ostream& operator<< (ostream & out, Graph &g) {
+            
             out << "Vertecies: ";
-            for (int i = 0; i < g.siz() - 1; i++){
+            for (int i = 0; i < g.siz(); i++){
                 out << g.dictionary[i];
                 out << " ";
             }
             out << endl << "Edges: ";
-            for (int i = 0; i < g.siz() - 1; i++){
+            for (int i = 0; i < g.siz(); i++){
                 out << endl;
-                for (int e = 0; e < g.siz() - 1; e++){
+                for (int e = 0; e < g.siz(); e++){
+                    if (g.graph[e][i] != 1 && g.graph[e][i] != 0){
+                        g.graph[e][i] = 0;
+                    }
                     out << g.graph[e][i];
                     out << " ";
                 }
@@ -140,18 +193,6 @@ class Graph{
         int graph[20][20];
         int size;
         T dictionary[20];
-        // array of vectors is used to store the graph
-        // in the form of an adjacency list
-        vector<int> adj[20];
-        /*const int GRAPH_SIZE = 20;
-int graph[GRAPH_SIZE][GRAPH_SIZE];
-int size;
-
-T dictionary[20];
-
-int siz(){
-    return GRAPH_SIZE; //Return the constant holding the size of the array.
-}*/
         int siz(){
             // return graph.size();
             return size;
